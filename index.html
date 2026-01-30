@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technical Class Timetable</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2847 50%, #0f2744 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background blobs */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(79, 172, 254, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            top: -200px;
+            left: -200px;
+            animation: float 20s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(52, 211, 153, 0.25) 0%, transparent 70%);
+            border-radius: 50%;
+            bottom: -150px;
+            right: -150px;
+            animation: float 25s ease-in-out infinite reverse;
+            z-index: 0;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(50px, -50px) scale(1.1);
+            }
+            66% {
+                transform: translate(-30px, 30px) scale(0.9);
+            }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .faculty-card {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .faculty-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4facfe, #34d399);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .faculty-card:hover::before {
+            opacity: 1;
+        }
+
+        .faculty-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            object-fit: cover;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .faculty-card:hover .faculty-img {
+            border-color: rgba(79, 172, 254, 0.6);
+            transform: scale(1.1);
+            box-shadow: 0 8px 24px rgba(79, 172, 254, 0.4);
+        }
+
+        .modal-backdrop {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(30px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                0 24px 64px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            animation: slideUp 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .close-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .modal-img {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            border: 4px solid #4facfe;
+            object-fit: cover;
+            box-shadow: 0 8px 24px rgba(79, 172, 254, 0.3);
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, #4facfe 0%, #34d399 100%);
+            color: white;
+        }
+
+        .table-row {
+            background: rgba(255, 255, 255, 0.5);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .table-row:hover {
+            background: rgba(255, 255, 255, 0.7);
+            transform: translateX(4px);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-online {
+            background: rgba(52, 211, 153, 0.2);
+            color: #059669;
+            border: 1px solid rgba(52, 211, 153, 0.4);
+        }
+
+        .badge-offline {
+            background: rgba(239, 68, 68, 0.2);
+            color: #dc2626;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .join-link {
+            color: #4facfe;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .join-link:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+
+        .logo-circle {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.2), rgba(52, 211, 153, 0.2));
+            backdrop-filter: blur(20px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            position: relative;
+            margin: 0 auto 20px;
+        }
+
+        .logo-circle::before {
+            content: '';
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(52, 211, 153, 0.4) 0%, transparent 70%);
+            border-radius: 50%;
+            top: -10px;
+            right: -30px;
+            z-index: -1;
+        }
+
+        .logo-circle::after {
+            content: '';
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            background: radial-gradient(circle, rgba(79, 172, 254, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            bottom: -10px;
+            left: -30px;
+            z-index: -1;
+        }
+
+        .logo-text {
+            font-size: 32px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 2px;
+        }
+
+        /* Scrollbar styling */
+        .modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .modal-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #4facfe, #34d399);
+            border-radius: 4px;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #2563eb, #059669);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-white px-4 py-6">
+
+    <!-- ================= HEADER ================= -->
+    <div class="text-center mb-10 relative z-10">
+        <!-- <div class="logo-circle">
+            <span class="logo-text">T</span>
+        </div> -->
+        <h1 class="text-4xl md:text-5xl font-bold mb-3" style="text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);">
+            Technical Class Timetable
+        </h1>
+        <p class="text-lg text-blue-200">
+            Click on a faculty to view their schedule
+        </p>
+    </div>
+
+    <!-- ================= FACULTY GRID ================= -->
+    <div id="facultyGrid"
+         class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 relative z-10">
+    </div>
+
+    <!-- ================= MODAL ================= -->
+    <div id="modal"
+         class="fixed inset-0 bg-black/70 modal-backdrop hidden items-center justify-center z-50 px-4">
+
+        <div class="modal-content w-full max-w-3xl rounded-3xl p-8 relative">
+
+            <!-- Close Button -->
+            <button onclick="closeModal()"
+                    class="close-btn absolute top-4 right-4">✕</button>
+
+            <!-- Faculty Info -->
+            <div class="flex flex-col items-center mb-6">
+                <img id="modalImg"
+                     src="images/default.png"
+                     class="modal-img mb-3" />
+                <h2 id="modalTitle" class="text-2xl font-bold text-gray-800"></h2>
+            </div>
+
+            <!-- Timetable -->
+            <div class="overflow-x-auto rounded-2xl shadow-lg">
+                <table class="w-full text-sm">
+                    <thead class="table-header">
+                        <tr>
+                            <th class="p-3 text-left font-semibold">Day</th>
+                            <th class="p-3 text-left font-semibold">Start</th>
+                            <th class="p-3 text-left font-semibold">End</th>
+                            <th class="p-3 text-left font-semibold">Mode</th>
+                            <th class="p-3 text-left font-semibold">Location</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ================= CONFIG ================= */
+        const SHEET_ID = "1dnRg9wPqI0dhlsPN7_IpjDKYUmfEnT9jKjAnoDIwpH8";
+
+        /* Faculty list = Google Sheet tab names */
+        const faculties = [
+            "Yogesh",
+            "Soumik",
+            "Debanjan",
+            "Himanshu",
+            "Kaustubh",
+            "Sourabh"
+        ];
+
+        /* ================= FACULTY GRID ================= */
+        const grid = document.getElementById("facultyGrid");
+
+        faculties.forEach(name => {
+            const card = document.createElement("div");
+            card.className = "glass-card faculty-card p-6 flex flex-col items-center justify-center";
+
+            card.innerHTML = `
+                <img src="images/${name}.png"
+                     onerror="this.src='images/default.png'"
+                     class="faculty-img mb-4" />
+                <div class="font-bold text-xl text-white mb-1">${name}</div>
+                <div class="text-sm text-blue-200">View Schedule</div>
+            `;
+
+            card.onclick = () => loadFacultyTimetable(name);
+            grid.appendChild(card);
+        });
+
+        /* ================= CSV PARSER (SAFE) ================= */
+        function parseCSV(text) {
+            const rows = [];
+            let row = [], current = "", inQuotes = false;
+
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === "," && !inQuotes) {
+                    row.push(current);
+                    current = "";
+                } else if (char === "\n" && !inQuotes) {
+                    row.push(current);
+                    rows.push(row);
+                    row = [];
+                    current = "";
+                } else {
+                    current += char;
+                }
+            }
+            row.push(current);
+            rows.push(row);
+            return rows;
+        }
+
+        /* ================= LOAD TIMETABLE ================= */
+        function loadFacultyTimetable(name) {
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
+
+            fetch(url)
+                .then(res => res.text())
+                .then(csv => {
+                    const data = parseCSV(csv);
+                    const tbody = document.getElementById("modalBody");
+                    tbody.innerHTML = "";
+
+                    data.slice(1).forEach(cols => {
+                        if (cols.length < 6) return;
+
+                        const mode = cols[3];
+                        const row = document.createElement("tr");
+                        row.className = "table-row";
+
+                        row.innerHTML = `
+                            <td class="p-3 font-semibold text-gray-800">${cols[0]}</td>
+                            <td class="p-3 text-gray-700">${cols[1]}</td>
+                            <td class="p-3 text-gray-700">${cols[2]}</td>
+                            <td class="p-3">
+                                <span class="badge ${mode === "Online" ? "badge-online" : "badge-offline"}">
+                                    ${mode}
+                                </span>
+                            </td>
+                            <td class="p-3 text-gray-700">
+                                ${mode === "Online"
+                                    ? `<a href="${cols[4]}" target="_blank"
+                                         class="join-link">🔗 Join Meeting</a>`
+                                    : cols[5]}
+                            </td>
+                        `;
+                        
+                        tbody.appendChild(row);
+                    });
+
+                    // Set modal faculty info
+                    document.getElementById("modalTitle").innerText = `${name}'s Timetable`;
+
+                    const img = document.getElementById("modalImg");
+                    img.src = `images/${name}.png`;
+                    img.onerror = () => img.src = "images/default.png";
+
+                    openModal();
+                })
+                .catch(err => {
+                    console.error('Error loading timetable:', err);
+                    alert('Failed to load timetable. Please try again.');
+                });
+        }
+
+        /* ================= MODAL CONTROL ================= */
+        function openModal() {
+            const modal = document.getElementById("modal");
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+        }
+
+        function closeModal() {
+            const modal = document.getElementById("modal");
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+        }
+
+        // Close modal when clicking outside
+        document.getElementById("modal").addEventListener("click", function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "Escape") {
+                closeModal();
+            }
+        });
+    </script>
+
+</body>
+</html>
