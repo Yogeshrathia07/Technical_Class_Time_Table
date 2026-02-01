@@ -299,6 +299,17 @@
         .modal-content::-webkit-scrollbar-thumb:hover {
             background: linear-gradient(135deg, #2563eb, #059669);
         }
+
+
+        .announcement-card {
+            background: linear-gradient(135deg, rgba(79,172,254,0.15), rgba(52,211,153,0.15));
+            backdrop-filter: blur(20px);
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.25);
+            padding: 20px 24px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+        }
+
     </style>
 </head>
 <body class="min-h-screen text-white px-4 py-6">
@@ -315,6 +326,12 @@
             Click on a faculty to view their schedule
         </p>
     </div>
+
+    <!-- ================= ANNOUNCEMENT ================= -->
+    <div id="announcementSection"
+        class="max-w-6xl mx-auto mb-8 hidden relative z-10">
+    </div>
+
 
     <!-- ================= FACULTY GRID ================= -->
     <div id="facultyGrid"
@@ -500,6 +517,79 @@
                 closeModal();
             }
         });
+
+
+        /* ================= ANNOUNCEMENT FROM GOOGLE SHEET ================= */
+
+        /* ================= ANNOUNCEMENTS FROM GOOGLE SHEET ================= */
+
+function loadAnnouncement() {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Announcement`;
+
+    fetch(url)
+        .then(res => res.text())
+        .then(csv => {
+            const data = parseCSV(csv);
+
+            // Remove header row
+            const rows = data.slice(1);
+
+            const section = document.getElementById("announcementSection");
+            let html = "";
+            let hasActive = false;
+
+            rows.forEach(row => {
+                const [title, message, active, date] = row;
+
+                if (active?.toLowerCase() !== "yes") return;
+                if (!title || !message) return;
+
+                hasActive = true;
+
+                html += `
+                    <div class="announcement-card mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-xl font-bold text-white">
+                                📢 ${title}
+                            </h3>
+                            ${date ? `
+                                <span class="text-sm text-blue-200 whitespace-nowrap">
+                                    ${formatDate(date)}
+                                </span>
+                            ` : ``}
+                        </div>
+                        <p class="text-blue-100">
+                            ${message}
+                        </p>
+                    </div>
+                `;
+            });
+
+            if (hasActive) {
+                section.innerHTML = html;
+                section.classList.remove("hidden");
+            }
+        })
+        .catch(err => {
+            console.error("Announcement load failed", err);
+        });
+}
+
+
+function formatDate(dateStr) {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+    });
+}
+
+
+        // Call it once on page load
+        loadAnnouncement();
+
     </script>
 
 </body>
