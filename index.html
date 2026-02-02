@@ -720,8 +720,8 @@
         card.className = 'glass-card faculty-card';
         card.setAttribute('data-name', name);
         card.innerHTML = `
-            <img src="./images/${name}.jpeg"
-                 onerror="if(this.src.includes('default.jpeg')||this.src.includes('data:image')){this.removeAttribute('onerror');}else{this.src='./images/default.jpeg';this.onerror=function(){this.src=PERSON_SVG;this.removeAttribute('onerror');};}"
+            <img src="${name}.jpeg"
+                 onerror="if(this.src.includes('default.jpeg')||this.src.includes('data:image')){this.removeAttribute('onerror');}else{this.src='default.jpeg';this.onerror=function(){this.src=PERSON_SVG;this.removeAttribute('onerror');};}"
                  class="faculty-img" alt="${name}" />
             <div class="faculty-name">${name}</div>
             <div class="faculty-label">View Schedule</div>
@@ -845,9 +845,9 @@
         const img = document.getElementById('modalImg');
         img.style.display = '';
         img.removeAttribute('onerror');
-        img.src = `./images/${name}.jpeg`;
+        img.src = `${name}.jpeg`;
         img.onerror = () => {
-            img.src = './images/default.jpeg';
+            img.src = 'default.jpeg';
             img.onerror = () => { img.src = PERSON_SVG; img.removeAttribute('onerror'); };
         };
 
@@ -855,9 +855,9 @@
         const eImg = document.getElementById('emptyImg');
         eImg.style.display = '';
         eImg.removeAttribute('onerror');
-        eImg.src = `./images/${name}.jpeg`;
+        eImg.src = `${name}.jpeg`;
         eImg.onerror = () => {
-            eImg.src = './images/default.jpeg';
+            eImg.src = 'default.jpeg';
             eImg.onerror = () => { eImg.src = PERSON_SVG; eImg.removeAttribute('onerror'); };
         };
 
